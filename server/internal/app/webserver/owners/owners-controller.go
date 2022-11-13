@@ -1,9 +1,10 @@
-package webserver
+package owners
 
 import (
 	"net/http"
 	"petclinic-go/server/internal/app/registry"
 	"petclinic-go/server/internal/app/services"
+	"petclinic-go/server/internal/app/webserver/dtos"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,9 +15,9 @@ func OwnersController(router *gin.RouterGroup, registry *registry.Registry) {
 	controller.GET("", func(ctx *gin.Context) {
 		owners := registry.OwnersService.GetAll()
 
-		ownerDTOs := make([]*OwnerSummaryDTO, len(owners))
+		ownerDTOs := make([]*dtos.OwnerSummaryDTO, len(owners))
 		for i, owner := range owners {
-			ownerDTOs[i] = mapOwnerToSummaryDTO(owner)
+			ownerDTOs[i] = dtos.MapOwnerToSummaryDTO(owner)
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{
@@ -34,7 +35,7 @@ func OwnersController(router *gin.RouterGroup, registry *registry.Registry) {
 			return
 		}
 
-		dto := mapOwnerToDTO(owner)
+		dto := dtos.MapOwnerToDTO(owner)
 
 		ctx.JSON(http.StatusOK, dto)
 	})
@@ -62,7 +63,7 @@ func OwnersController(router *gin.RouterGroup, registry *registry.Registry) {
 			return
 		}
 
-		dto := mapOwnerToDTO(owner)
+		dto := dtos.MapOwnerToDTO(owner)
 
 		ctx.JSON(http.StatusCreated, dto)
 	})
@@ -76,15 +77,9 @@ func OwnersController(router *gin.RouterGroup, registry *registry.Registry) {
 			return
 		}
 
-		uriParams := &UpdateOwnerUriParams{}
-		err = ctx.ShouldBindUri(uriParams)
+		ownerID := ctx.Param("ownerId")
 
-		if err != nil {
-			ctx.Error(err)
-			return
-		}
-
-		owner, err := registry.OwnersService.UpdateOwner(uriParams.OwnerID, services.CreateOrUpdateOwnerParams{
+		owner, err := registry.OwnersService.UpdateOwner(ownerID, services.CreateOrUpdateOwnerParams{
 			FirstName: request.FirstName,
 			LastName:  request.LastName,
 
@@ -98,7 +93,7 @@ func OwnersController(router *gin.RouterGroup, registry *registry.Registry) {
 			return
 		}
 
-		dto := mapOwnerToDTO(owner)
+		dto := dtos.MapOwnerToDTO(owner)
 
 		ctx.JSON(http.StatusOK, dto)
 	})
@@ -107,5 +102,7 @@ func OwnersController(router *gin.RouterGroup, registry *registry.Registry) {
 		ownerId, _ := ctx.Params.Get("ownerId")
 
 		registry.OwnersService.DeleteOwnerByID(ownerId)
+
+		ctx.Status(http.StatusNoContent)
 	})
 }

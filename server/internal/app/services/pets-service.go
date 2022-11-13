@@ -3,6 +3,7 @@ package services
 import (
 	"petclinic-go/server/internal/app/models"
 	"petclinic-go/server/internal/app/repository"
+	"petclinic-go/server/internal/app/system"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,14 +19,34 @@ func NewPetsService(ownersRepository *repository.OwnersRepository) *PetsService 
 	}
 }
 
-type CreatePetParams struct {
+type CreateOrUpdatePetParams struct {
 	Name string
 
 	BirthDate string
 	Type      models.PetType
 }
 
-func (service *PetsService) CreatePet(ownerID string, params CreatePetParams) (*models.Pet, error) {
+func (service *PetsService) GetPetByID(ownerID string, petID string) (*models.Pet, error) {
+	owner, error := service.ownersRepository.FindByID(ownerID)
+	if error != nil {
+		return nil, error
+	}
+
+	pet, exists := owner.Pets[petID]
+	if !exists {
+		return nil, &system.EntityNotFoundError{
+			EntityName: "Pet",
+			ID:         petID,
+			OtherParams: map[string]interface{}{
+				"ownerID": ownerID,
+			},
+		}
+	}
+
+	return pet, nil
+}
+
+func (service *PetsService) CreatePet(ownerID string, params CreateOrUpdatePetParams) (*models.Pet, error) {
 	owner, error := service.ownersRepository.FindByID(ownerID)
 	if error != nil {
 		return nil, error
@@ -41,7 +62,7 @@ func (service *PetsService) CreatePet(ownerID string, params CreatePetParams) (*
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 
-		Visits: make(map[string]*models.Visit),
+		Visits: make(map[string]string),
 	}
 
 	owner.Pets[pet.ID] = pet
@@ -63,4 +84,48 @@ func (service *PetsService) GetPetsForOwnerID(ownerID string) ([]*models.Pet, er
 	}
 
 	return pets, nil
+}
+
+func (service *PetsService) UpdatePet(ownerID string, petID string, updates *CreateOrUpdatePetParams) (*models.Pet, error) {
+	owner, error := service.ownersRepository.FindByID(ownerID)
+	if error != nil {
+		return nil, error
+	}
+
+	pet, exists := owner.Pets[petID]
+	if !exists {
+		return nil, &system.EntityNotFoundError{
+			EntityName: "Pet",
+			ID:         petID,
+			OtherParams: map[string]interface{}{
+				"ownerID": ownerID,
+			},
+		}
+	}
+
+	updatedPet := &models.Pet{
+		ID:        petID,
+		Name:      updates.Name,
+		Type:      updates.Type,
+		BirthDate: updates.BirthDate,
+
+		CreatedAt: pet.CreatedAt,
+		UpdatedAt: time.Now(),
+
+		Visits: pet.Visits,
+	}
+
+	owner.Pets[petID] = updatedPet
+
+	return updatedPet, nil
+}
+
+func (service *PetsService) DeletePet(ownerID string, petID string) error {
+	owner, error := service.ownersRepository.FindByID(ownerID)
+	if error != nil {
+		return error
+	}
+
+	delete(owner.Pets, petID)
+	return nil
 }

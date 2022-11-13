@@ -12,5 +12,5 @@ type Pet struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	Visits map[string]*Visit
+	Visits map[string]string
 }
