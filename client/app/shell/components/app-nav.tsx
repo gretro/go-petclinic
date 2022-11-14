@@ -19,7 +19,7 @@ const MAIN_MENU_ITEMS: Menu[] = [
   {
     id: "owners",
     text: "Owners & Pets",
-    to: "/owners-and-pets",
+    to: "/owners",
   },
   {
     id: "visits",
@@ -36,7 +36,7 @@ export const AppNav = () => {
   };
 
   return (
-    <nav className="bg-green-700 absolute top-0 left-0 right-0">
+    <nav className="bg-green-700 absolute top-0 left-0 right-0 z-50">
       <div className="px-2 sm:px-6 lg:px-8">
         <div className="relative flex h-16 items-center justify-between">
           {/* Mobile menu */}
@@ -100,7 +100,10 @@ export const AppNav = () => {
 
           <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             <NavLink className="flex flex-shrink-0 items-center" to={"/"}>
-              <h1 className="text-md sm:text-2xl text-white">Pet Clinic</h1>
+              <h1 className="text-md sm:text-2xl text-white flex items-center gap-1">
+                <span className="material-symbols-outlined">pets</span>
+                Pet Clinic
+              </h1>
             </NavLink>
             <div className="hidden sm:ml-6 sm:block">
               <div className="flex space-x-4">
@@ -127,6 +130,7 @@ export const AppNav = () => {
                 key={menuItem.id}
                 className="text-gray-300 hover:bg-green-800 hover:text-white block px-3 py-2 rounded-md text-base font-medium active:bg-black"
                 to={menuItem.to}
+                onClick={handleMenuToggle}
               >
                 {menuItem.text}
               </NavLink>

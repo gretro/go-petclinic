@@ -9,7 +9,13 @@ export const meta: MetaFunction = () => ({
   viewport: "width=device-width,initial-scale=1",
 });
 
-export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: styles },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200",
+  },
+];
 
 export default function App() {
   return (
@@ -18,9 +24,9 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="h-screen w-screen relative bg-gray-300 dark:bg-slate-700">
+      <body className="h-screen w-screen relative overflow-hidden bg-gray-300 dark:bg-slate-700">
         <AppNav />
-        <main className="h-full pt-20 pb-4 px-8">
+        <main className="h-screen overflow-auto pt-20 pb-4 px-8">
           <Outlet />
         </main>
 
